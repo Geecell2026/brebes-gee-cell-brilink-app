@@ -23,7 +23,7 @@ export function TrendOmsetChart({ data }: { data: { bulan: string; omset: number
               )
             }
           />
-          <Bar dataKey="omset" fill="#171717" radius={[4, 4, 0, 0]} />
+          <Bar dataKey="omset" fill="#2563eb" radius={[4, 4, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
     </div>

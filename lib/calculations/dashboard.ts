@@ -11,20 +11,30 @@ export async function getKpiSummary(year: number, month: number) {
   const monthStart = new Date(Date.UTC(year, month - 1, 1));
   const monthEnd = new Date(Date.UTC(year, month, 1));
 
-  const [totalCabang, transaksiBulanIni, biayaBulanIni] = await Promise.all([
+  const prevMonthDate = new Date(Date.UTC(year, month - 2, 1));
+  const prevYear = prevMonthDate.getUTCFullYear();
+  const prevMonth = prevMonthDate.getUTCMonth() + 1;
+  const prevMonthStart = new Date(Date.UTC(prevYear, prevMonth - 1, 1));
+  const prevMonthEnd = new Date(Date.UTC(prevYear, prevMonth, 1));
+
+  const [totalCabang, transaksiBulanIni, biayaBulanIni, transaksiBulanLalu] = await Promise.all([
     db.branch.count({ where: { isActive: true } }),
     db.dailyTransaction.findMany({ where: { date: { gte: monthStart, lt: monthEnd } } }),
     db.expenseEntry.aggregate({
       where: { date: { gte: monthStart, lt: monthEnd } },
       _sum: { totalPembayaran: true },
     }),
+    db.dailyTransaction.findMany({ where: { date: { gte: prevMonthStart, lt: prevMonthEnd } } }),
   ]);
 
   const omsetBulanIni = transaksiBulanIni.reduce((sum, tx) => sum + hitungTotalPendapatan(tx), 0);
+  const omsetBulanLalu = transaksiBulanLalu.reduce((sum, tx) => sum + hitungTotalPendapatan(tx), 0);
+  const omsetPerubahanPersen = omsetBulanLalu > 0 ? ((omsetBulanIni - omsetBulanLalu) / omsetBulanLalu) * 100 : null;
 
   return {
     totalCabang,
     omsetBulanIni,
+    omsetPerubahanPersen,
     totalBiayaBulanIni: Number(biayaBulanIni._sum.totalPembayaran ?? 0),
     totalTransaksi: transaksiBulanIni.length,
   };

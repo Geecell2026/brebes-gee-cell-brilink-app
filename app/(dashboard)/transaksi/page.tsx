@@ -52,7 +52,7 @@ export default async function TransaksiPage({
         </div>
         <Link
           href="/transaksi/baru"
-          className="rounded-md bg-neutral-900 px-3 py-2 text-sm font-medium text-white hover:bg-neutral-800"
+          className="rounded-md bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700"
         >
           + Input Transaksi
         </Link>
@@ -106,29 +106,29 @@ export default async function TransaksiPage({
                 </td>
               </tr>
             )}
-            {transactions.map((tx) => {
+            {transactions.map((tx, i) => {
               const totalBiaya = biayaByBranchDate.get(`${tx.branchId}_${tx.date.toISOString()}`) ?? 0;
               return (
-                <tr key={tx.id} className="border-b border-neutral-100 last:border-0">
+                <tr key={tx.id} className={i % 2 === 1 ? "bg-neutral-50" : undefined}>
                   <td className="px-3 py-2">{tx.date.toLocaleDateString("id-ID")}</td>
                   <td className="px-3 py-2">{tx.branch.name}</td>
                   <td className="px-3 py-2">
                     <span
                       className={
                         tx.status === "LIBUR"
-                          ? "rounded-full bg-neutral-100 px-2 py-0.5 text-xs text-neutral-500"
-                          : "rounded-full bg-green-50 px-2 py-0.5 text-xs text-green-700"
+                          ? "rounded-full bg-neutral-100 px-2 py-0.5 text-xs font-medium text-neutral-500"
+                          : "rounded-full bg-green-50 px-2 py-0.5 text-xs font-medium text-green-700"
                       }
                     >
                       {tx.status === "LIBUR" ? "Libur" : "Buka"}
                     </span>
                   </td>
-                  <td className="px-3 py-2 text-right">{formatRupiah(hitungTotalPendapatan(tx))}</td>
-                  <td className="px-3 py-2 text-right">{formatRupiah(hitungTotalPengeluaran(tx, totalBiaya))}</td>
-                  <td className="px-3 py-2 text-right">{formatRupiah(Number(tx.saldoAkhir))}</td>
+                  <td className="px-3 py-2 text-right tabular-nums">{formatRupiah(hitungTotalPendapatan(tx))}</td>
+                  <td className="px-3 py-2 text-right tabular-nums">{formatRupiah(hitungTotalPengeluaran(tx, totalBiaya))}</td>
+                  <td className="px-3 py-2 text-right tabular-nums">{formatRupiah(Number(tx.saldoAkhir))}</td>
                   <td className="px-3 py-2 text-right">
                     <div className="flex items-center justify-end gap-3">
-                      <Link href={`/transaksi/${tx.id}`} className="text-xs text-neutral-600 hover:underline">
+                      <Link href={`/transaksi/${tx.id}`} className="text-xs text-blue-600 hover:underline">
                         Edit
                       </Link>
                       <form

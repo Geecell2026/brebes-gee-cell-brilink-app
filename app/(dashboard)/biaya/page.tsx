@@ -101,13 +101,17 @@ export default async function BiayaPage({
                 </td>
               </tr>
             )}
-            {expenses.map((e) => (
-              <tr key={e.id} className="border-b border-neutral-100 last:border-0">
+            {expenses.map((e, i) => (
+              <tr key={e.id} className={i % 2 === 1 ? "bg-neutral-50" : undefined}>
                 <td className="px-3 py-2">{e.date.toLocaleDateString("id-ID")}</td>
                 <td className="px-3 py-2">{e.branch.name}</td>
-                <td className="px-3 py-2">{e.category.name}</td>
+                <td className="px-3 py-2">
+                  <span className="rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700">
+                    {e.category.name}
+                  </span>
+                </td>
                 <td className="px-3 py-2">{e.keterangan}</td>
-                <td className="px-3 py-2 text-right">{formatRupiah(Number(e.totalPembayaran))}</td>
+                <td className="px-3 py-2 text-right tabular-nums">{formatRupiah(Number(e.totalPembayaran))}</td>
                 <td className="px-3 py-2 text-right">
                   <form
                     action={async () => {
