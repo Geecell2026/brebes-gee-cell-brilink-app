@@ -1,0 +1,135 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  createdAt    DateTime @default(now())
+}
+
+model Branch {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  code      String   @unique
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  dailyTransactions DailyTransaction[]
+  expenseEntries    ExpenseEntry[]
+}
+
+model ExpenseCategory {
+  id       String  @id @default(cuid())
+  name     String  @unique
+  isActive Boolean @default(true)
+
+  expenses ExpenseEntry[]
+}
+
+enum StatusHari {
+  BUKA
+  LIBUR
+}
+
+// Struktur sesuai sheet "REKAP LAPORAN BREBES": Brilink (P.Adm/PPOB/Fee),
+// Acc & Aice, Lain-lain, Aset, PV per orang, Gaji, Plus Minus, Saldo, breakdown teller.
+// Kategori "Pengeluaran" (OPS/PROMOSI) di sheet lama dipindahkan jadi modul Biaya
+// (ExpenseEntry) - sama seperti pola yang dipakai di app Ekek.
+model DailyTransaction {
+  id       String     @id @default(cuid())
+  branchId String
+  branch   Branch     @relation(fields: [branchId], references: [id])
+  date     DateTime   @db.Date
+  status   StatusHari @default(BUKA)
+
+  brilinkPendapatan Decimal @default(0) @db.Decimal(14, 2)
+  brilinkPpob       Decimal @default(0) @db.Decimal(14, 2)
+  brilinkFee        Decimal @default(0) @db.Decimal(14, 2)
+
+  accAicePendapatan  Decimal @default(0) @db.Decimal(14, 2)
+  accAicePengeluaran Decimal @default(0) @db.Decimal(14, 2)
+
+  lainKeterangan  String?
+  lainPendapatan  Decimal @default(0) @db.Decimal(14, 2)
+  lainPengeluaran Decimal @default(0) @db.Decimal(14, 2)
+
+  asetPendapatan  Decimal @default(0) @db.Decimal(14, 2)
+  asetPengeluaran Decimal @default(0) @db.Decimal(14, 2)
+
+  gajiKasbon Decimal @default(0) @db.Decimal(14, 2)
+  plusMinus  Decimal @default(0) @db.Decimal(14, 2)
+
+  saldoAwal  Decimal @default(0) @db.Decimal(14, 2)
+  saldoAkhir Decimal @default(0) @db.Decimal(14, 2)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  pvEntries       PvEntry[]
+  tellerBreakdown TransactionTellerBreakdown[]
+
+  @@unique([branchId, date])
+  @@index([branchId, date])
+}
+
+// PV (uang titip/prive) per orang - dibuat fleksibel (bukan field tetap ERWIN/LANDO)
+// supaya tidak perlu ubah skema kalau staf berganti.
+model PvEntry {
+  id                 String           @id @default(cuid())
+  dailyTransactionId String
+  dailyTransaction   DailyTransaction @relation(fields: [dailyTransactionId], references: [id], onDelete: Cascade)
+  personName         String
+  amount             Decimal          @db.Decimal(14, 2)
+
+  @@index([dailyTransactionId])
+}
+
+model TransactionTellerBreakdown {
+  id                 String           @id @default(cuid())
+  dailyTransactionId String
+  dailyTransaction   DailyTransaction @relation(fields: [dailyTransactionId], references: [id], onDelete: Cascade)
+
+  tellerName String
+  transfer   Decimal @default(0) @db.Decimal(14, 2)
+  eWallet    Decimal @default(0) @db.Decimal(14, 2)
+  itTt       Decimal @default(0) @db.Decimal(14, 2)
+
+  @@index([dailyTransactionId])
+}
+
+model ExpenseEntry {
+  id         String          @id @default(cuid())
+  branchId   String
+  branch     Branch          @relation(fields: [branchId], references: [id])
+  date       DateTime        @db.Date
+  categoryId String
+  category   ExpenseCategory @relation(fields: [categoryId], references: [id])
+
+  keterangan      String
+  totalPembayaran Decimal @default(0) @db.Decimal(14, 2)
+
+  createdAt DateTime @default(now())
+
+  @@index([branchId, date])
+}
+
+// Singleton - pengaturan threshold dashboard.
+model AppSettings {
+  id                   String  @id @default(cuid())
+  statusSangatBaik     Decimal @default(1000000) @db.Decimal(14, 2)
+  statusBaik           Decimal @default(500000) @db.Decimal(14, 2)
+  statusPerluPerhatian Decimal @default(200000) @db.Decimal(14, 2)
+
+  updatedAt DateTime @updatedAt
+}
