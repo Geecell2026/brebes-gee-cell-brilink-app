@@ -8,8 +8,8 @@ const BULAN_SINGKAT = [
 ];
 
 export async function getKpiSummary(year: number, month: number) {
-  const monthStart = new Date(year, month - 1, 1);
-  const monthEnd = new Date(year, month, 1);
+  const monthStart = new Date(Date.UTC(year, month - 1, 1));
+  const monthEnd = new Date(Date.UTC(year, month, 1));
 
   const [totalCabang, transaksiBulanIni, biayaBulanIni] = await Promise.all([
     db.branch.count({ where: { isActive: true } }),
@@ -38,8 +38,8 @@ export async function getTrendOmsetBulanan(bulanTerakhir = 6) {
     const targetDate = new Date(now.getFullYear(), now.getMonth() - i, 1);
     const year = targetDate.getFullYear();
     const month = targetDate.getMonth() + 1;
-    const monthStart = new Date(year, month - 1, 1);
-    const monthEnd = new Date(year, month, 1);
+    const monthStart = new Date(Date.UTC(year, month - 1, 1));
+    const monthEnd = new Date(Date.UTC(year, month, 1));
 
     const transaksi = await db.dailyTransaction.findMany({
       where: { date: { gte: monthStart, lt: monthEnd } },
@@ -65,8 +65,8 @@ function tentukanStatus(
 }
 
 export async function getDetailPerCabang(year: number, month: number) {
-  const monthStart = new Date(year, month - 1, 1);
-  const monthEnd = new Date(year, month, 1);
+  const monthStart = new Date(Date.UTC(year, month - 1, 1));
+  const monthEnd = new Date(Date.UTC(year, month, 1));
 
   const [branches, settings] = await Promise.all([
     db.branch.findMany({ where: { isActive: true }, orderBy: { name: "asc" } }),

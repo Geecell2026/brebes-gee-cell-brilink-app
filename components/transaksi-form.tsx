@@ -34,9 +34,9 @@ type InitialData = {
   brilinkFee: number;
   accAicePendapatan: number;
   accAicePengeluaran: number;
-  lainKeterangan: string;
   lainPendapatan: number;
   lainPengeluaran: number;
+  asetKeterangan: string;
   asetPendapatan: number;
   asetPengeluaran: number;
   gajiKasbon: number;
@@ -172,11 +172,7 @@ export function TransaksiForm({
 
       <section className="space-y-3 rounded-lg border border-neutral-200 bg-white p-4">
         <h2 className="text-sm font-semibold text-neutral-800">Lain-lain</h2>
-        <div className="grid grid-cols-3 gap-4">
-          <div className="space-y-1">
-            <label className={labelClass}>Keterangan</label>
-            <input name="lainKeterangan" defaultValue={initialData?.lainKeterangan} className={inputClass} />
-          </div>
+        <div className="grid grid-cols-2 gap-4">
           <Field label="Pendapatan" name="lainPendapatan" defaultValue={initialData?.lainPendapatan} />
           <Field label="Pengeluaran" name="lainPengeluaran" defaultValue={initialData?.lainPengeluaran} />
         </div>
@@ -184,7 +180,11 @@ export function TransaksiForm({
 
       <section className="space-y-3 rounded-lg border border-neutral-200 bg-white p-4">
         <h2 className="text-sm font-semibold text-neutral-800">Aset</h2>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-3 gap-4">
+          <div className="space-y-1">
+            <label className={labelClass}>Keterangan</label>
+            <input name="asetKeterangan" defaultValue={initialData?.asetKeterangan} className={inputClass} />
+          </div>
           <Field label="Pendapatan" name="asetPendapatan" defaultValue={initialData?.asetPendapatan} />
           <Field label="Pengeluaran" name="asetPengeluaran" defaultValue={initialData?.asetPengeluaran} />
         </div>

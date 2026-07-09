@@ -14,8 +14,8 @@ export default async function BiayaPage({
   const now = new Date();
   const bulan = params.bulan || `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
   const [year, month] = bulan.split("-").map(Number);
-  const startDate = new Date(year, month - 1, 1);
-  const endDate = new Date(year, month, 1);
+  const startDate = new Date(Date.UTC(year, month - 1, 1));
+  const endDate = new Date(Date.UTC(year, month, 1));
 
   const [branches, categories, expenses] = await Promise.all([
     db.branch.findMany({ where: { isActive: true }, orderBy: { name: "asc" } }),

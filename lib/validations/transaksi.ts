@@ -32,10 +32,10 @@ export const dailyTransactionSchema = z.object({
   accAicePendapatan: decimalField,
   accAicePengeluaran: decimalField,
 
-  lainKeterangan: z.string().optional(),
   lainPendapatan: decimalField,
   lainPengeluaran: decimalField,
 
+  asetKeterangan: z.string().optional(),
   asetPendapatan: decimalField,
   asetPengeluaran: decimalField,
 

@@ -60,10 +60,10 @@ model DailyTransaction {
   accAicePendapatan  Decimal @default(0) @db.Decimal(14, 2)
   accAicePengeluaran Decimal @default(0) @db.Decimal(14, 2)
 
-  lainKeterangan  String?
   lainPendapatan  Decimal @default(0) @db.Decimal(14, 2)
   lainPengeluaran Decimal @default(0) @db.Decimal(14, 2)
 
+  asetKeterangan  String?
   asetPendapatan  Decimal @default(0) @db.Decimal(14, 2)
   asetPengeluaran Decimal @default(0) @db.Decimal(14, 2)
 

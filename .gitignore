@@ -48,3 +48,4 @@ next-env.d.ts
 
 # data hasil export/migrasi - berisi data bisnis riil, jangan di-commit
 scripts/migrate-from-sheets/local-data-export.json
+scripts/migrate-from-sheets/source-data
