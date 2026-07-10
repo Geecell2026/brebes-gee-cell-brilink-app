@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { employeeSchema } from "@/lib/validations/kepegawaian";
 
@@ -20,11 +21,36 @@ export async function createEmployee(
       name: parsed.data.name,
       jabatan: parsed.data.jabatan,
       tanggalMasuk: parsed.data.tanggalMasuk ? new Date(parsed.data.tanggalMasuk) : null,
+      tanggalKeluar: parsed.data.tanggalKeluar ? new Date(parsed.data.tanggalKeluar) : null,
     },
   });
   revalidatePath("/kepegawaian");
   revalidatePath("/transaksi/baru");
   return {};
+}
+
+export async function updateEmployee(
+  id: string,
+  _prevState: KepegawaianFormState,
+  formData: FormData
+): Promise<KepegawaianFormState> {
+  const parsed = employeeSchema.safeParse(Object.fromEntries(formData.entries()));
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Data tidak valid" };
+  }
+
+  await db.employee.update({
+    where: { id },
+    data: {
+      name: parsed.data.name,
+      jabatan: parsed.data.jabatan,
+      tanggalMasuk: parsed.data.tanggalMasuk ? new Date(parsed.data.tanggalMasuk) : null,
+      tanggalKeluar: parsed.data.tanggalKeluar ? new Date(parsed.data.tanggalKeluar) : null,
+    },
+  });
+  revalidatePath("/kepegawaian");
+  revalidatePath("/transaksi/baru");
+  redirect("/kepegawaian");
 }
 
 export async function toggleEmployeeActive(id: string) {

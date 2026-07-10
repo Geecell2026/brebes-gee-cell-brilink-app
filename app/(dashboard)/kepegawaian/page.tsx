@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { db } from "@/lib/db";
 import { EmployeeForm } from "@/components/employee-form";
 import { toggleEmployeeActive } from "@/actions/kepegawaian";
@@ -21,6 +22,7 @@ export default async function KepegawaianPage() {
               <th className="px-3 py-2">Nama</th>
               <th className="px-3 py-2">Jabatan</th>
               <th className="px-3 py-2">Tanggal Masuk</th>
+              <th className="px-3 py-2">Tanggal Keluar</th>
               <th className="px-3 py-2">Status</th>
               <th className="px-3 py-2"></th>
             </tr>
@@ -28,7 +30,7 @@ export default async function KepegawaianPage() {
           <tbody>
             {employees.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-3 py-6 text-center text-neutral-400">
+                <td colSpan={6} className="px-3 py-6 text-center text-neutral-400">
                   Belum ada karyawan.
                 </td>
               </tr>
@@ -41,6 +43,9 @@ export default async function KepegawaianPage() {
                   {emp.tanggalMasuk ? emp.tanggalMasuk.toLocaleDateString("id-ID") : "-"}
                 </td>
                 <td className="px-3 py-2">
+                  {emp.tanggalKeluar ? emp.tanggalKeluar.toLocaleDateString("id-ID") : "-"}
+                </td>
+                <td className="px-3 py-2">
                   {emp.isActive ? (
                     <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">Aktif</span>
                   ) : (
@@ -48,16 +53,21 @@ export default async function KepegawaianPage() {
                   )}
                 </td>
                 <td className="px-3 py-2 text-right">
-                  <form
-                    action={async () => {
-                      "use server";
-                      await toggleEmployeeActive(emp.id);
-                    }}
-                  >
-                    <button className="text-xs text-neutral-600 hover:underline">
-                      {emp.isActive ? "Nonaktifkan" : "Aktifkan"}
-                    </button>
-                  </form>
+                  <div className="flex items-center justify-end gap-3">
+                    <Link href={`/kepegawaian/${emp.id}`} className="text-xs text-blue-600 hover:underline">
+                      Edit
+                    </Link>
+                    <form
+                      action={async () => {
+                        "use server";
+                        await toggleEmployeeActive(emp.id);
+                      }}
+                    >
+                      <button className="text-xs text-neutral-600 hover:underline">
+                        {emp.isActive ? "Nonaktifkan" : "Aktifkan"}
+                      </button>
+                    </form>
+                  </div>
                 </td>
               </tr>
             ))}
