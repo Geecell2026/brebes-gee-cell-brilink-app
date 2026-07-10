@@ -8,7 +8,7 @@ export const pvEntrySchema = z.object({
 });
 
 export const tellerRowSchema = z.object({
-  tellerName: z.string().min(1),
+  tellerName: z.string().optional().default(""),
   transfer: decimalField,
   eWallet: decimalField,
   itTt: decimalField,

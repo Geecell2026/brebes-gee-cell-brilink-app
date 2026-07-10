@@ -16,6 +16,15 @@ type PvRow = { personName: string; amount: string };
 
 const JUMLAH_BARIS_BIAYA_DEFAULT = 5;
 
+// "-" dipakai sebagai placeholder untuk baris teller tanpa nama saat migrasi data
+// lama - jangan diperlakukan sebagai nama karyawan sungguhan.
+function parseTellerNames(tellerName: string): string[] {
+  return tellerName
+    .split(" ")
+    .map((n) => n.trim())
+    .filter((n) => n && n !== "-");
+}
+
 function buatBiayaRowsAwal(existing: BiayaRow[] = []): BiayaRow[] {
   const rows = [...existing];
   while (rows.length < JUMLAH_BARIS_BIAYA_DEFAULT) {
@@ -103,7 +112,7 @@ export function TransaksiForm({
     setTellerRows((rows) =>
       rows.map((row, i) => {
         if (i !== index) return row;
-        const names = row.tellerName ? row.tellerName.split(" ").filter(Boolean) : [];
+        const names = parseTellerNames(row.tellerName);
         const next = checked ? [...names, name] : names.filter((n) => n !== name);
         return { ...row, tellerName: next.join(" ") };
       })
@@ -330,7 +339,7 @@ export function TransaksiForm({
         )}
 
         {tellerRows.map((row, i) => {
-          const selectedNames = row.tellerName ? row.tellerName.split(" ").filter(Boolean) : [];
+          const selectedNames = parseTellerNames(row.tellerName);
           return (
             <div key={i} className="space-y-3 rounded-md border border-neutral-100 p-3">
               <div className="grid grid-cols-4 items-end gap-3">

@@ -76,7 +76,7 @@ export async function createDailyTransaction(
         pvEntries: { create: validPvRows },
         tellerBreakdown: {
           create: data.tellerRows.map((row) => ({
-            tellerName: row.tellerName,
+            tellerName: row.tellerName || "-",
             transfer: row.transfer,
             eWallet: row.eWallet,
             itTt: row.itTt,
@@ -161,7 +161,7 @@ export async function updateDailyTransaction(
         pvEntries: { create: validPvRows },
         tellerBreakdown: {
           create: data.tellerRows.map((row) => ({
-            tellerName: row.tellerName,
+            tellerName: row.tellerName || "-",
             transfer: row.transfer,
             eWallet: row.eWallet,
             itTt: row.itTt,
