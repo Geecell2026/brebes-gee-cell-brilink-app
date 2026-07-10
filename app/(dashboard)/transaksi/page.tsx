@@ -92,8 +92,10 @@ export default async function TransaksiPage({
               <th className="px-3 py-2">Tanggal</th>
               <th className="px-3 py-2">Cabang</th>
               <th className="px-3 py-2">Status</th>
-              <th className="px-3 py-2 text-right">Total Pendapatan</th>
+              <th className="px-3 py-2 text-right">Omset Admin</th>
+              <th className="px-3 py-2 text-right">Pendapatan Acc/Aksesoris &amp; Aice</th>
               <th className="px-3 py-2 text-right">Total Pengeluaran</th>
+              <th className="px-3 py-2 text-right">Plus Minus</th>
               <th className="px-3 py-2 text-right">Saldo Akhir</th>
               <th className="px-3 py-2"></th>
             </tr>
@@ -101,7 +103,7 @@ export default async function TransaksiPage({
           <tbody>
             {transactions.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-3 py-6 text-center text-neutral-400">
+                <td colSpan={9} className="px-3 py-6 text-center text-neutral-400">
                   Belum ada transaksi pada periode ini.
                 </td>
               </tr>
@@ -124,7 +126,9 @@ export default async function TransaksiPage({
                     </span>
                   </td>
                   <td className="px-3 py-2 text-right tabular-nums">{formatRupiah(hitungTotalPendapatan(tx))}</td>
+                  <td className="px-3 py-2 text-right tabular-nums">{formatRupiah(Number(tx.accAicePendapatan))}</td>
                   <td className="px-3 py-2 text-right tabular-nums">{formatRupiah(hitungTotalPengeluaran(tx, totalBiaya))}</td>
+                  <td className="px-3 py-2 text-right tabular-nums">{formatRupiah(Number(tx.plusMinus))}</td>
                   <td className="px-3 py-2 text-right tabular-nums">{formatRupiah(Number(tx.saldoAkhir))}</td>
                   <td className="px-3 py-2 text-right">
                     <div className="flex items-center justify-end gap-3">
