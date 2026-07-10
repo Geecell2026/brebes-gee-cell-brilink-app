@@ -3,7 +3,10 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { Smartphone, LayoutDashboard, Receipt, Wallet, Store, Settings, LogOut, Menu, X, ArrowLeftRight, Users } from "lucide-react";
+import {
+  Smartphone, LayoutDashboard, Receipt, Wallet, Store, Settings, LogOut, Menu, X, ArrowLeftRight, Users,
+  BarChart3, CalendarDays, TrendingUp, LineChart, Database,
+} from "lucide-react";
 import { logoutAction } from "@/actions/auth";
 
 const NAV_GROUPS = [
@@ -12,6 +15,16 @@ const NAV_GROUPS = [
     items: [
       { href: "/", label: "Dashboard", icon: LayoutDashboard },
       { href: "/total-transaksi", label: "Total Transaksi", icon: ArrowLeftRight },
+    ],
+  },
+  {
+    label: "Analisis Transaksi",
+    items: [
+      { href: "/analisis", label: "Ringkasan Owner", icon: BarChart3 },
+      { href: "/analisis/harian", label: "Analisis Harian", icon: CalendarDays },
+      { href: "/analisis/mingguan-bulanan", label: "Mingguan & Bulanan", icon: TrendingUp },
+      { href: "/analisis/forecast", label: "Forecast", icon: LineChart },
+      { href: "/analisis/data", label: "Data & Validasi", icon: Database },
     ],
   },
   {

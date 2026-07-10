@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { getAppSettings } from "@/lib/calculations/settings";
 import { getSession, hashPassword, verifyPassword } from "@/lib/auth";
-import { thresholdSchema, changePasswordSchema, expenseCategorySchema } from "@/lib/validations/pengaturan";
+import { thresholdSchema, targetSchema, changePasswordSchema, expenseCategorySchema } from "@/lib/validations/pengaturan";
 
 export type PengaturanFormState = { error?: string; success?: string };
 
@@ -23,6 +23,27 @@ export async function updateThresholds(
   revalidatePath("/pengaturan");
   revalidatePath("/");
   return { success: "Threshold berhasil disimpan" };
+}
+
+export async function updateTarget(
+  _prevState: PengaturanFormState,
+  formData: FormData
+): Promise<PengaturanFormState> {
+  const parsed = targetSchema.safeParse(Object.fromEntries(formData.entries()));
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Data tidak valid" };
+  }
+
+  const settings = await getAppSettings();
+  const raw = parsed.data.targetTransaksiHarian;
+  await db.appSettings.update({
+    where: { id: settings.id },
+    data: { targetTransaksiHarian: raw === "" || raw === undefined ? null : raw },
+  });
+
+  revalidatePath("/pengaturan");
+  revalidatePath("/analisis");
+  return { success: "Target berhasil disimpan" };
 }
 
 export async function changePassword(

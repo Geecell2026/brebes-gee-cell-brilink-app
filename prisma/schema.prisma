@@ -139,10 +139,11 @@ model Employee {
 
 // Singleton - pengaturan threshold dashboard.
 model AppSettings {
-  id                   String  @id @default(cuid())
-  statusSangatBaik     Decimal @default(1000000) @db.Decimal(14, 2)
-  statusBaik           Decimal @default(500000) @db.Decimal(14, 2)
-  statusPerluPerhatian Decimal @default(200000) @db.Decimal(14, 2)
+  id                    String  @id @default(cuid())
+  statusSangatBaik      Decimal @default(1000000) @db.Decimal(14, 2)
+  statusBaik            Decimal @default(500000) @db.Decimal(14, 2)
+  statusPerluPerhatian  Decimal @default(200000) @db.Decimal(14, 2)
+  targetTransaksiHarian Int?
 
   updatedAt DateTime @updatedAt
 }

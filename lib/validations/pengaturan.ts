@@ -6,6 +6,10 @@ export const thresholdSchema = z.object({
   statusPerluPerhatian: z.coerce.number().positive("Harus lebih dari 0"),
 });
 
+export const targetSchema = z.object({
+  targetTransaksiHarian: z.coerce.number().int().positive("Harus lebih dari 0").optional().or(z.literal("")),
+});
+
 export const changePasswordSchema = z
   .object({
     passwordLama: z.string().min(1, "Password lama wajib diisi"),
