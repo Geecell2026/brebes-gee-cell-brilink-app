@@ -9,6 +9,7 @@ import {
 
 type Branch = { id: string; name: string };
 type Category = { id: string; name: string };
+type Employee = { id: string; name: string };
 type TellerRow = { tellerName: string; transfer: string; eWallet: string; itTt: string };
 type BiayaRow = { categoryId: string; keterangan: string; jumlah: string };
 type PvRow = { personName: string; amount: string };
@@ -55,11 +56,13 @@ const labelClass = "text-xs font-medium text-neutral-600";
 export function TransaksiForm({
   branches,
   categories,
+  employees,
   transactionId,
   initialData,
 }: {
   branches: Branch[];
   categories: Category[];
+  employees: Employee[];
   transactionId?: string;
   initialData?: InitialData;
 }) {
@@ -94,6 +97,17 @@ export function TransaksiForm({
 
   function removeTellerRow(index: number) {
     setTellerRows((rows) => rows.filter((_, i) => i !== index));
+  }
+
+  function toggleTellerPerson(index: number, name: string, checked: boolean) {
+    setTellerRows((rows) =>
+      rows.map((row, i) => {
+        if (i !== index) return row;
+        const names = row.tellerName ? row.tellerName.split(" ").filter(Boolean) : [];
+        const next = checked ? [...names, name] : names.filter((n) => n !== name);
+        return { ...row, tellerName: next.join(" ") };
+      })
+    );
   }
 
   function addPvRow() {
@@ -315,52 +329,70 @@ export function TransaksiForm({
           <p className="text-xs text-neutral-400">Belum ada baris teller.</p>
         )}
 
-        {tellerRows.map((row, i) => (
-          <div key={i} className="grid grid-cols-5 items-end gap-3">
-            <div className="space-y-1">
-              <label className={labelClass}>Nama Teller</label>
-              <input
-                className={inputClass}
-                value={row.tellerName}
-                onChange={(e) => updateTellerRow(i, "tellerName", e.target.value)}
-              />
+        {tellerRows.map((row, i) => {
+          const selectedNames = row.tellerName ? row.tellerName.split(" ").filter(Boolean) : [];
+          return (
+            <div key={i} className="space-y-3 rounded-md border border-neutral-100 p-3">
+              <div className="grid grid-cols-4 items-end gap-3">
+                <div className="space-y-1">
+                  <label className={labelClass}>Transfer</label>
+                  <input
+                    type="number"
+                    className={inputClass}
+                    value={row.transfer}
+                    onChange={(e) => updateTellerRow(i, "transfer", e.target.value)}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className={labelClass}>E-Wallet/PPOB</label>
+                  <input
+                    type="number"
+                    className={inputClass}
+                    value={row.eWallet}
+                    onChange={(e) => updateTellerRow(i, "eWallet", e.target.value)}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className={labelClass}>Tarik Tunai</label>
+                  <input
+                    type="number"
+                    className={inputClass}
+                    value={row.itTt}
+                    onChange={(e) => updateTellerRow(i, "itTt", e.target.value)}
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => removeTellerRow(i)}
+                  className="h-fit rounded-md border border-red-200 px-2 py-1.5 text-xs text-red-600 hover:bg-red-50"
+                >
+                  Hapus
+                </button>
+              </div>
+              <div className="space-y-1">
+                <label className={labelClass}>Nama Teller (karyawan yang bertugas)</label>
+                {employees.length === 0 ? (
+                  <p className="text-xs text-neutral-400">
+                    Belum ada karyawan terdaftar — tambahkan dulu di halaman Kepegawaian.
+                  </p>
+                ) : (
+                  <div className="flex flex-wrap gap-3">
+                    {employees.map((emp) => (
+                      <label key={emp.id} className="flex items-center gap-1.5 text-sm text-neutral-700">
+                        <input
+                          type="checkbox"
+                          checked={selectedNames.includes(emp.name)}
+                          onChange={(e) => toggleTellerPerson(i, emp.name, e.target.checked)}
+                        />
+                        {emp.name}
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
-            <div className="space-y-1">
-              <label className={labelClass}>Transfer</label>
-              <input
-                type="number"
-                className={inputClass}
-                value={row.transfer}
-                onChange={(e) => updateTellerRow(i, "transfer", e.target.value)}
-              />
-            </div>
-            <div className="space-y-1">
-              <label className={labelClass}>E-Wallet</label>
-              <input
-                type="number"
-                className={inputClass}
-                value={row.eWallet}
-                onChange={(e) => updateTellerRow(i, "eWallet", e.target.value)}
-              />
-            </div>
-            <div className="space-y-1">
-              <label className={labelClass}>IT+TT</label>
-              <input
-                type="number"
-                className={inputClass}
-                value={row.itTt}
-                onChange={(e) => updateTellerRow(i, "itTt", e.target.value)}
-              />
-            </div>
-            <button
-              type="button"
-              onClick={() => removeTellerRow(i)}
-              className="h-fit rounded-md border border-red-200 px-2 py-1.5 text-xs text-red-600 hover:bg-red-50"
-            >
-              Hapus
-            </button>
-          </div>
-        ))}
+          );
+        })}
       </section>
 
       {state.error && <p className="text-sm text-red-600">{state.error}</p>}

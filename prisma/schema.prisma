@@ -124,6 +124,18 @@ model ExpenseEntry {
   @@index([branchId, date])
 }
 
+// Daftar karyawan sederhana - hanya data dasar, tanpa Absensi/Kasbon/Payroll
+// (sesuai keputusan cakupan Brebes yang ringkas). Dipakai juga sebagai sumber
+// pilihan "Nama Teller" di form Transaksi Harian.
+model Employee {
+  id           String    @id @default(cuid())
+  name         String
+  jabatan      String
+  isActive     Boolean   @default(true)
+  tanggalMasuk DateTime? @db.Date
+  createdAt    DateTime  @default(now())
+}
+
 // Singleton - pengaturan threshold dashboard.
 model AppSettings {
   id                   String  @id @default(cuid())

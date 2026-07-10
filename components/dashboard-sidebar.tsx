@@ -3,17 +3,24 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { Smartphone, LayoutDashboard, Receipt, Wallet, Store, Settings, LogOut, Menu, X } from "lucide-react";
+import { Smartphone, LayoutDashboard, Receipt, Wallet, Store, Settings, LogOut, Menu, X, ArrowLeftRight, Users } from "lucide-react";
 import { logoutAction } from "@/actions/auth";
 
 const NAV_GROUPS = [
   {
     label: "Ringkasan",
-    items: [{ href: "/", label: "Dashboard", icon: LayoutDashboard }],
+    items: [
+      { href: "/", label: "Dashboard", icon: LayoutDashboard },
+      { href: "/total-transaksi", label: "Total Transaksi", icon: ArrowLeftRight },
+    ],
   },
   {
     label: "Operasional",
     items: [{ href: "/transaksi", label: "Transaksi Harian", icon: Receipt }],
+  },
+  {
+    label: "Kepegawaian",
+    items: [{ href: "/kepegawaian", label: "Kepegawaian", icon: Users }],
   },
   {
     label: "Lainnya",

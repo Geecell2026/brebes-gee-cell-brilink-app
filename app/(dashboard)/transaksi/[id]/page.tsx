@@ -10,8 +10,13 @@ export default async function TransaksiEditPage({ params }: { params: Promise<{ 
   });
   if (!tx) notFound();
 
-  const [categories, biayaEntries] = await Promise.all([
+  const [categories, employees, biayaEntries] = await Promise.all([
     db.expenseCategory.findMany({
+      where: { isActive: true },
+      orderBy: { name: "asc" },
+      select: { id: true, name: true },
+    }),
+    db.employee.findMany({
       where: { isActive: true },
       orderBy: { name: "asc" },
       select: { id: true, name: true },
@@ -33,6 +38,7 @@ export default async function TransaksiEditPage({ params }: { params: Promise<{ 
       <TransaksiForm
         branches={[]}
         categories={categories}
+        employees={employees}
         transactionId={tx.id}
         initialData={{
           branchId: tx.branchId,
