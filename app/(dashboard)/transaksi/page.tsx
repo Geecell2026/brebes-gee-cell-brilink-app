@@ -50,12 +50,17 @@ export default async function TransaksiPage({
           <h1 className="text-xl font-semibold text-neutral-900">Transaksi Harian</h1>
           <p className="text-sm text-neutral-500">Rekap harian per cabang</p>
         </div>
-        <Link
-          href="/transaksi/baru"
-          className="rounded-md bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700"
-        >
-          + Input Transaksi
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link href="/transaksi/penutupan-bulanan" className="text-sm text-neutral-600 hover:underline">
+            Penutupan Bulanan
+          </Link>
+          <Link
+            href="/transaksi/baru"
+            className="rounded-md bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700"
+          >
+            + Input Transaksi
+          </Link>
+        </div>
       </div>
 
       <form className="flex gap-3 rounded-lg border border-neutral-200 bg-white p-3">

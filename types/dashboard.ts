@@ -11,6 +11,19 @@ export type StatusCabangDashboard =
 // null = data belum tersedia (beda dengan 0 = nilai nol yang benar-benar tercatat).
 export type Growth = { persen: number | null; label: string };
 
+// Rincian pendapatan untuk panel "Rincian Pendapatan" di Dashboard (poin E).
+export type RincianPendapatan = {
+  pendapatanAdmin: number;
+  ppob: number;
+  fee: number;
+  pendapatanLain: number;
+  netProfitAksesori: number | null; // null = ada bulan yang datanya cuma gabungan (historis)
+  netProfitAice: number | null;
+  totalNetProfit: number; // 0 kalau memang belum ada penutupan FINAL sama sekali
+  bulanBelumDitutup: string[]; // label bulan dalam periode yang belum ada penutupan Final
+  estimasiNetProfitBulanBerjalan: number | null; // hanya diisi utk bulan berjalan yg belum Final
+};
+
 export type DashboardKpi = {
   totalCabang: number;
   totalPendapatan: number;
@@ -31,6 +44,7 @@ export type DashboardKpi = {
   periodeLabel: string;
   pembandingLabel: string;
   adaDataRincianTransaksi: boolean;
+  rincianPendapatan: RincianPendapatan;
 };
 
 export type ProyeksiSkenario = { skenario: "Konservatif" | "Realistis" | "Optimistis"; nilai: number };

@@ -121,6 +121,72 @@ export default async function DashboardPage({
         </p>
       </div>
 
+      <div className="rounded-lg border border-neutral-200 bg-white p-4">
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="text-sm font-semibold text-neutral-800">Rincian Pendapatan</h2>
+          <span
+            className="text-xs text-neutral-400"
+            title="Net Profit Acc & Aice merupakan laba bersih bulanan usaha tambahan. Nilai ini menambah laba, tetapi tidak menambah Saldo Akhir karena bukan arus kas baru."
+          >
+            ⓘ Tentang Net Profit Acc &amp; Aice
+          </span>
+        </div>
+        <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm md:grid-cols-4">
+          <div>
+            <p className="text-xs text-neutral-500">Pendapatan Admin BRILink</p>
+            <p className="font-medium tabular-nums">{formatRupiah(kpi.rincianPendapatan.pendapatanAdmin)}</p>
+          </div>
+          <div>
+            <p className="text-xs text-neutral-500">PPOB</p>
+            <p className="font-medium tabular-nums">{formatRupiah(kpi.rincianPendapatan.ppob)}</p>
+          </div>
+          <div>
+            <p className="text-xs text-neutral-500">Fee</p>
+            <p className="font-medium tabular-nums">{formatRupiah(kpi.rincianPendapatan.fee)}</p>
+          </div>
+          <div>
+            <p className="text-xs text-neutral-500">Pendapatan Lain</p>
+            <p className="font-medium tabular-nums">{formatRupiah(kpi.rincianPendapatan.pendapatanLain)}</p>
+          </div>
+          <div>
+            <p className="text-xs text-neutral-500">Net Profit Aksesori</p>
+            <p className="font-medium tabular-nums">
+              {kpi.rincianPendapatan.netProfitAksesori !== null ? formatRupiah(kpi.rincianPendapatan.netProfitAksesori) : "Belum tersedia"}
+            </p>
+          </div>
+          <div>
+            <p className="text-xs text-neutral-500">Net Profit Aice</p>
+            <p className="font-medium tabular-nums">
+              {kpi.rincianPendapatan.netProfitAice !== null ? formatRupiah(kpi.rincianPendapatan.netProfitAice) : "Belum tersedia"}
+            </p>
+          </div>
+          <div>
+            <p className="text-xs text-neutral-500">Total Net Profit Acc &amp; Aice</p>
+            <p className="font-medium tabular-nums">{formatRupiah(kpi.rincianPendapatan.totalNetProfit)}</p>
+          </div>
+          <div>
+            <p className="text-xs text-neutral-500">Total Pendapatan untuk Laba</p>
+            <p className="font-semibold tabular-nums">
+              {formatRupiah(
+                kpi.rincianPendapatan.pendapatanAdmin +
+                  kpi.rincianPendapatan.ppob +
+                  kpi.rincianPendapatan.fee +
+                  kpi.rincianPendapatan.pendapatanLain +
+                  kpi.rincianPendapatan.totalNetProfit
+              )}
+            </p>
+          </div>
+        </div>
+        {kpi.rincianPendapatan.bulanBelumDitutup.length > 0 && (
+          <p className="mt-3 text-xs text-amber-600">
+            Net Profit Acc &amp; Aice belum ditutup untuk: {kpi.rincianPendapatan.bulanBelumDitutup.join(", ")}.
+            {kpi.rincianPendapatan.estimasiNetProfitBulanBerjalan !== null && (
+              <> Estimasi bulan berjalan: {formatRupiah(kpi.rincianPendapatan.estimasiNetProfitBulanBerjalan)} (bukan angka aktual).</>
+            )}
+          </p>
+        )}
+      </div>
+
       <div>
         <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-400">KPI Transaksi &amp; Kelengkapan</h2>
         <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">

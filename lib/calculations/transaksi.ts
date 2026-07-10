@@ -40,10 +40,6 @@ export function hitungTotalPengeluaran(tx: TxLike, totalBiayaHariItu = 0) {
   );
 }
 
-export function hitungAccAiceNetProfit(tx: TxLike) {
-  return Number(tx.accAicePendapatan) - Number(tx.accAicePengeluaran);
-}
-
 export function hitungSaldoAkhir(tx: TxLike, totalBiayaHariItu = 0) {
   return (
     Number(tx.saldoAwal) +

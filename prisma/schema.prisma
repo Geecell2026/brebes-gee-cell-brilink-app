@@ -27,6 +27,7 @@ model Branch {
 
   dailyTransactions DailyTransaction[]
   expenseEntries    ExpenseEntry[]
+  monthlyClosings   MonthlyClosing[]
 }
 
 model ExpenseCategory {
@@ -135,6 +136,37 @@ model Employee {
   tanggalMasuk  DateTime? @db.Date
   tanggalKeluar DateTime? @db.Date
   createdAt     DateTime  @default(now())
+}
+
+enum StatusPenutupan {
+  DRAFT
+  FINAL
+}
+
+// Penutupan Bulanan - Net Profit Acc & Aice (laba bersih bulanan usaha
+// aksesori/aice), diinput manual 1x per cabang per bulan. BEDA dari
+// accAicePendapatan/accAicePengeluaran harian di DailyTransaction (yang
+// memengaruhi Saldo Akhir/kas) - Net Profit bulanan ini cuma memengaruhi
+// laporan laba di Dashboard, TIDAK PERNAH menyentuh Saldo Akhir.
+// netProfitAksesori/netProfitAice nullable karena data historis (sebelum
+// fitur ini ada) cuma tersedia sebagai satu angka gabungan - jangan
+// memaksa pemisahan, cukup isi totalNetProfit langsung untuk kasus itu.
+model MonthlyClosing {
+  id                String          @id @default(cuid())
+  branchId          String
+  branch            Branch          @relation(fields: [branchId], references: [id])
+  year              Int
+  month             Int
+  netProfitAksesori Decimal?        @db.Decimal(14, 2)
+  netProfitAice     Decimal?        @db.Decimal(14, 2)
+  totalNetProfit    Decimal         @db.Decimal(14, 2)
+  keterangan        String?
+  status            StatusPenutupan @default(DRAFT)
+  tanggalInput      DateTime        @default(now())
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  @@unique([branchId, year, month])
 }
 
 // Singleton - pengaturan threshold dashboard.

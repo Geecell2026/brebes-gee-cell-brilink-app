@@ -3,6 +3,7 @@ import { hitungTotalPendapatan, hitungTotalPengeluaran } from "@/lib/calculation
 import { getAppSettings } from "@/lib/calculations/settings";
 import { pertumbuhanPersen, rataRata } from "@/lib/analytics/statistics";
 import { hitungProyeksiAkhirBulan } from "@/lib/forecast/forecast";
+import { hitungNetProfitBreakdown, hitungLabaDenganNetProfit } from "@/lib/calculations/net-profit";
 import type {
   DashboardKpi,
   DetailCabangDashboard,
@@ -10,6 +11,7 @@ import type {
   KomposisiTransaksi,
   PeriodeMode,
   ProyeksiSkenario,
+  RincianPendapatan,
   StatusCabangDashboard,
   TransaksiPerJenisRow,
   TrendPoint,
@@ -56,6 +58,62 @@ export function resolveDashboardPeriod(params: { startDate?: string; endDate?: s
 
 function periodeLengthDays(startDate: Date, endDate: Date): number {
   return Math.round((endDate.getTime() - startDate.getTime()) / 86400000);
+}
+
+function enumerateMonths(startDate: Date, endDate: Date): { year: number; month: number }[] {
+  const months: { year: number; month: number }[] = [];
+  const cursor = new Date(Date.UTC(startDate.getUTCFullYear(), startDate.getUTCMonth(), 1));
+  const lastIncluded = new Date(endDate.getTime() - 1);
+  while (cursor.getTime() <= lastIncluded.getTime()) {
+    months.push({ year: cursor.getUTCFullYear(), month: cursor.getUTCMonth() + 1 });
+    cursor.setUTCMonth(cursor.getUTCMonth() + 1);
+  }
+  return months;
+}
+
+// Penutupan Bulanan (Net Profit Acc & Aice) HANYA memengaruhi Laba/Rincian
+// Pendapatan di sini - tidak pernah disentuh di hitungPendapatanBiayaLaba atau
+// Saldo Akhir (lib/calculations/transaksi.ts tetap tidak diubah). Perhitungan
+// murninya ada di hitungNetProfitBreakdown (lib/calculations/net-profit.ts,
+// diuji unit test) - fungsi ini cuma wrapper query DB, sengaja mengambil semua
+// status (bukan cuma FINAL) supaya logika "Draft tidak dihitung" tetap berada
+// di fungsi murni yang sama dengan yang diuji, bukan diam-diam di query.
+async function fetchNetProfitFinal(branchId: string | undefined, months: { year: number; month: number }[]) {
+  if (months.length === 0) {
+    return { total: 0, aksesori: null as number | null, aice: null as number | null, bulanBelumDitutup: [] as string[] };
+  }
+  const closings = await db.monthlyClosing.findMany({
+    where: {
+      ...(branchId ? { branchId } : {}),
+      OR: months.map((m) => ({ year: m.year, month: m.month })),
+    },
+  });
+  return hitungNetProfitBreakdown(closings, months);
+}
+
+// Poin F spesifikasi: estimasi HANYA untuk bulan berjalan yang belum Final, dan
+// harus ditampilkan sebagai "Estimasi" terpisah, tidak pernah digabung ke laba aktual.
+async function estimasiNetProfitBulanBerjalan(
+  branchId: string | undefined,
+  months: { year: number; month: number }[]
+): Promise<number | null> {
+  const now = new Date();
+  const bulanIni = { year: now.getUTCFullYear(), month: now.getUTCMonth() + 1 };
+  const periodeMencakupBulanIni = months.some((m) => m.year === bulanIni.year && m.month === bulanIni.month);
+  if (!periodeMencakupBulanIni) return null;
+
+  const sudahFinal = await db.monthlyClosing.findFirst({
+    where: { status: "FINAL", year: bulanIni.year, month: bulanIni.month, ...(branchId ? { branchId } : {}) },
+  });
+  if (sudahFinal) return null;
+
+  const riwayat = await db.monthlyClosing.findMany({
+    where: { status: "FINAL", ...(branchId ? { branchId } : {}) },
+    orderBy: [{ year: "desc" }, { month: "desc" }],
+    take: 3,
+  });
+  if (riwayat.length === 0) return null;
+  return riwayat.reduce((sum, c) => sum + Number(c.totalNetProfit), 0) / riwayat.length;
 }
 
 // Poin 11 spesifikasi: perbandingan periode yang adil (bukan bulan-berjalan-parsial
@@ -173,9 +231,41 @@ export async function getDashboardKpi(params: {
     fetchBiayaByTanggalCabang(branchId, startDate, endDate),
   ]);
 
-  const { pendapatan, biaya, laba, margin } = hitungPendapatanBiayaLaba(transaksi, biayaMap);
+  const { pendapatan, biaya } = hitungPendapatanBiayaLaba(transaksi, biayaMap);
   const { transfer, eWallet, tarikTunai, totalTransaksi } = hitungTransaksiBreakdown(transaksi);
   const adaDataRincianTransaksi = transaksi.some((tx) => tx.tellerBreakdown.length > 0);
+
+  const bulanPeriode = enumerateMonths(startDate, endDate);
+  const netProfit = await fetchNetProfitFinal(branchId, bulanPeriode);
+  const estimasiNetProfit = await estimasiNetProfitBulanBerjalan(branchId, bulanPeriode);
+
+  // Poin B spesifikasi: Pendapatan untuk Laba = pendapatan operasional + Net
+  // Profit Acc & Aice (hanya yang berstatus FINAL). "totalPendapatan" KPI di
+  // bawah TETAP pendapatan operasional saja (dipakai utk pertumbuhanPendapatan),
+  // supaya perbandingan periode tidak melompat gara-gara input bulanan sekali.
+  const { laba, margin } = hitungLabaDenganNetProfit(pendapatan, biaya, netProfit.total);
+
+  let pendapatanAdmin = 0;
+  let ppob = 0;
+  let fee = 0;
+  let pendapatanLain = 0;
+  for (const tx of transaksi) {
+    pendapatanAdmin += Number(tx.brilinkPendapatan);
+    ppob += Number(tx.brilinkPpob);
+    fee += Number(tx.brilinkFee);
+    pendapatanLain += Number(tx.lainPendapatan) + Number(tx.asetPendapatan);
+  }
+  const rincianPendapatan: RincianPendapatan = {
+    pendapatanAdmin,
+    ppob,
+    fee,
+    pendapatanLain,
+    netProfitAksesori: netProfit.aksesori,
+    netProfitAice: netProfit.aice,
+    totalNetProfit: netProfit.total,
+    bulanBelumDitutup: netProfit.bulanBelumDitutup,
+    estimasiNetProfitBulanBerjalan: estimasiNetProfit,
+  };
 
   const { prevStart, prevEnd, pembandingLabel, scaleToPeriodLength } = resolveComparablePeriod(
     startDate,
@@ -227,6 +317,7 @@ export async function getDashboardKpi(params: {
     periodeLabel: `${fmtTanggalPendek(startDate)} - ${fmtTanggalPendek(new Date(endDate.getTime() - 86400000))}`,
     pembandingLabel,
     adaDataRincianTransaksi,
+    rincianPendapatan,
   };
 }
 
@@ -245,11 +336,13 @@ export async function getDashboardTrend(
     const monthStart = new Date(Date.UTC(year, month - 1, 1));
     const monthEnd = new Date(Date.UTC(year, month, 1));
 
-    const [transaksi, biayaMap] = await Promise.all([
+    const [transaksi, biayaMap, netProfit] = await Promise.all([
       fetchTransaksiPeriode(branchId, monthStart, monthEnd),
       fetchBiayaByTanggalCabang(branchId, monthStart, monthEnd),
+      fetchNetProfitFinal(branchId, [{ year, month }]),
     ]);
-    const { pendapatan, biaya, laba } = hitungPendapatanBiayaLaba(transaksi, biayaMap);
+    const { pendapatan, biaya } = hitungPendapatanBiayaLaba(transaksi, biayaMap);
+    const { laba } = hitungLabaDenganNetProfit(pendapatan, biaya, netProfit.total);
     const { transfer, eWallet, tarikTunai, totalTransaksi } = hitungTransaksiBreakdown(transaksi);
 
     result.push({
@@ -425,7 +518,9 @@ export async function getDashboardDetailCabang(params: {
         fetchBiayaByTanggalCabang(branch.id, prevStart, prevEnd),
       ]);
 
-      const { pendapatan, biaya, laba, margin } = hitungPendapatanBiayaLaba(transaksi, biayaMap);
+      const { pendapatan, biaya } = hitungPendapatanBiayaLaba(transaksi, biayaMap);
+      const netProfit = await fetchNetProfitFinal(branch.id, enumerateMonths(startDate, endDate));
+      const { laba, margin } = hitungLabaDenganNetProfit(pendapatan, biaya, netProfit.total);
       const { transfer, eWallet, tarikTunai, totalTransaksi } = hitungTransaksiBreakdown(transaksi);
       const prevFinansial = hitungPendapatanBiayaLaba(prevTransaksi, prevBiayaMap);
 
