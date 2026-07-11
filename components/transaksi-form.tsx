@@ -6,6 +6,8 @@ import {
   updateDailyTransaction,
   type TransaksiFormState,
 } from "@/actions/transaksi";
+import { TransactionCurrencyInput } from "@/components/transaction-currency-input";
+import { parseRupiahInput } from "@/lib/format/currency-input";
 
 type Branch = { id: string; name: string };
 type Category = { id: string; name: string };
@@ -173,31 +175,31 @@ export function TransaksiForm({
             <option value="LIBUR">Libur</option>
           </select>
         </div>
-        <Field label="Saldo Awal" name="saldoAwal" defaultValue={initialData?.saldoAwal} />
+        <TransactionCurrencyInput label="Saldo Awal" name="saldoAwal" defaultValue={initialData?.saldoAwal} />
       </section>
 
       <section className="space-y-3 rounded-lg border border-neutral-200 bg-white p-4">
         <h2 className="text-sm font-semibold text-neutral-800">Brilink</h2>
         <div className="grid grid-cols-3 gap-4">
-          <Field label="Pendapatan Adm" name="brilinkPendapatan" defaultValue={initialData?.brilinkPendapatan} />
-          <Field label="PPOB" name="brilinkPpob" defaultValue={initialData?.brilinkPpob} />
-          <Field label="Fee" name="brilinkFee" defaultValue={initialData?.brilinkFee} />
+          <TransactionCurrencyInput label="Pendapatan Adm" name="brilinkPendapatan" defaultValue={initialData?.brilinkPendapatan} />
+          <TransactionCurrencyInput label="PPOB" name="brilinkPpob" defaultValue={initialData?.brilinkPpob} />
+          <TransactionCurrencyInput label="Fee" name="brilinkFee" defaultValue={initialData?.brilinkFee} />
         </div>
       </section>
 
       <section className="space-y-3 rounded-lg border border-neutral-200 bg-white p-4">
         <h2 className="text-sm font-semibold text-neutral-800">Acc & Aice</h2>
         <div className="grid grid-cols-2 gap-4">
-          <Field label="Pendapatan" name="accAicePendapatan" defaultValue={initialData?.accAicePendapatan} />
-          <Field label="Pengeluaran" name="accAicePengeluaran" defaultValue={initialData?.accAicePengeluaran} />
+          <TransactionCurrencyInput label="Pendapatan" name="accAicePendapatan" defaultValue={initialData?.accAicePendapatan} />
+          <TransactionCurrencyInput label="Pengeluaran" name="accAicePengeluaran" defaultValue={initialData?.accAicePengeluaran} />
         </div>
       </section>
 
       <section className="space-y-3 rounded-lg border border-neutral-200 bg-white p-4">
         <h2 className="text-sm font-semibold text-neutral-800">Lain-lain</h2>
         <div className="grid grid-cols-2 gap-4">
-          <Field label="Pendapatan" name="lainPendapatan" defaultValue={initialData?.lainPendapatan} />
-          <Field label="Pengeluaran" name="lainPengeluaran" defaultValue={initialData?.lainPengeluaran} />
+          <TransactionCurrencyInput label="Pendapatan" name="lainPendapatan" defaultValue={initialData?.lainPendapatan} />
+          <TransactionCurrencyInput label="Pengeluaran" name="lainPengeluaran" defaultValue={initialData?.lainPengeluaran} />
         </div>
       </section>
 
@@ -208,16 +210,16 @@ export function TransaksiForm({
             <label className={labelClass}>Keterangan</label>
             <input name="asetKeterangan" defaultValue={initialData?.asetKeterangan} className={inputClass} />
           </div>
-          <Field label="Pendapatan" name="asetPendapatan" defaultValue={initialData?.asetPendapatan} />
-          <Field label="Pengeluaran" name="asetPengeluaran" defaultValue={initialData?.asetPengeluaran} />
+          <TransactionCurrencyInput label="Pendapatan" name="asetPendapatan" defaultValue={initialData?.asetPendapatan} />
+          <TransactionCurrencyInput label="Pengeluaran" name="asetPengeluaran" defaultValue={initialData?.asetPengeluaran} />
         </div>
       </section>
 
       <section className="space-y-3 rounded-lg border border-neutral-200 bg-white p-4">
         <h2 className="text-sm font-semibold text-neutral-800">Lainnya</h2>
         <div className="grid grid-cols-2 gap-4">
-          <Field label="Gaji/Kasbon" name="gajiKasbon" defaultValue={initialData?.gajiKasbon} />
-          <Field label="Plus Minus" name="plusMinus" defaultValue={initialData?.plusMinus} />
+          <TransactionCurrencyInput label="Gaji/Kasbon" name="gajiKasbon" defaultValue={initialData?.gajiKasbon} />
+          <TransactionCurrencyInput label="Plus Minus" name="plusMinus" defaultValue={initialData?.plusMinus} allowNegative />
         </div>
       </section>
 
@@ -245,15 +247,11 @@ export function TransaksiForm({
                 onChange={(e) => updatePvRow(i, "personName", e.target.value)}
               />
             </div>
-            <div className="space-y-1">
-              <label className={labelClass}>Jumlah</label>
-              <input
-                type="number"
-                className={inputClass}
-                value={row.amount}
-                onChange={(e) => updatePvRow(i, "amount", e.target.value)}
-              />
-            </div>
+            <TransactionCurrencyInput
+              label="Jumlah"
+              value={row.amount === "" ? null : parseRupiahInput(row.amount, false)}
+              onChange={(value) => updatePvRow(i, "amount", value === null ? "" : String(value))}
+            />
             <button
               type="button"
               onClick={() => removePvRow(i)}
@@ -302,15 +300,11 @@ export function TransaksiForm({
                 onChange={(e) => updateBiayaRow(i, "keterangan", e.target.value)}
               />
             </div>
-            <div className="space-y-1">
-              <label className={labelClass}>Jumlah</label>
-              <input
-                type="number"
-                className={inputClass}
-                value={row.jumlah}
-                onChange={(e) => updateBiayaRow(i, "jumlah", e.target.value)}
-              />
-            </div>
+            <TransactionCurrencyInput
+              label="Jumlah"
+              value={row.jumlah === "" ? null : parseRupiahInput(row.jumlah, false)}
+              onChange={(value) => updateBiayaRow(i, "jumlah", value === null ? "" : String(value))}
+            />
             <button
               type="button"
               onClick={() => removeBiayaRow(i)}
@@ -414,14 +408,5 @@ export function TransaksiForm({
         {pending ? "Menyimpan..." : isEdit ? "Simpan Perubahan" : "Simpan Transaksi"}
       </button>
     </form>
-  );
-}
-
-function Field({ label, name, defaultValue }: { label: string; name: string; defaultValue?: number }) {
-  return (
-    <div className="space-y-1">
-      <label className={labelClass}>{label}</label>
-      <input type="number" name={name} defaultValue={defaultValue ?? 0} className={inputClass} />
-    </div>
   );
 }
